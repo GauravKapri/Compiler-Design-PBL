@@ -1,0 +1,1 @@
+ ( main  ( stmt  ( stmt  ( for  ( stmt  ( stmt  ( = x 10 )  ( = p 20 ) ) Dc i )  ( = i 1 )  ( ++  ( <= i x ) i )  ( stmt  ( = p  ( * x i ) )  ( = j 30 ) ) ) )  ( = j  ( if  ( > x p ) x p ) ) ) )
