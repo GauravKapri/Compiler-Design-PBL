@@ -49,5 +49,5 @@ interprets the AST.
 
 # Team Members
 Chaitanya Bhatt
-Gaurav Kapri
 Darshit Joshi
+Gaurav Kapri
