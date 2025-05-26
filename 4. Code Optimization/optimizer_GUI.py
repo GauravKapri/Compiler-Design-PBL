@@ -3,7 +3,7 @@ from tkinter import ttk, messagebox, filedialog
 import os
 import threading
 
-from code_optimizer import optimize_code  # Make sure this matches your script name
+from code_optimizer import optimize_code
 
 SCRIPT_DIR = os.path.dirname(__file__)
 ICG_PATH = os.path.join(SCRIPT_DIR, "..", "3. ICG", "icg_output.txt")
