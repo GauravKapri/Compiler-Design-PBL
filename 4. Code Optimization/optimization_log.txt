@@ -1,0 +1,20 @@
+Constant propagated: 'x' assigned constant '10' in instruction 1
+Copy relationship established: 'p' copies '20' in instruction 2
+Variable 'p' marked mutable; copy invalidated at instruction 2
+Copy relationship established: 'i' copies '1' in instruction 3
+Variable 'i' marked mutable; copy invalidated at instruction 3
+Constant propagated: 'x' -> '10' in instruction 5
+Constant propagated: 'x' -> '10' in instruction 7
+Copy relationship established: 'p' copies 't2' in instruction 8
+Variable 'p' marked mutable; copy invalidated at instruction 8
+Copy relationship established: 'j' copies '30' in instruction 9
+Variable 'j' marked mutable; copy invalidated at instruction 9
+Copy relationship established: 'i' copies 't3' in instruction 11
+Variable 'i' marked mutable; copy invalidated at instruction 11
+Constant propagated: 'x' -> '10' in instruction 14
+Copy relationship established: 't4' copies 'x' in instruction 16
+Variable 't4' marked mutable; copy invalidated at instruction 16
+Copy relationship established: 't4' copies 'p' in instruction 19
+Variable 't4' marked mutable; copy invalidated at instruction 19
+Copy relationship established: 'j' copies 't4' in instruction 21
+Variable 'j' marked mutable; copy invalidated at instruction 21

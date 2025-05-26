@@ -1,0 +1,21 @@
+x = 10
+p = 20
+i = 1
+L1:
+t1 = i <= 10
+ifFalse t1 goto L2
+t2 = 10 * i
+p = t2
+j = 30
+t3 = i + 1
+i = t3
+goto L1
+L2:
+t5 = 10 > p
+ifFalse t5 goto L3
+t4 = x
+goto L4
+L3:
+t4 = p
+L4:
+j = t4
