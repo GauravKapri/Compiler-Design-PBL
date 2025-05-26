@@ -48,6 +48,6 @@ a piece of code is not producing the expected results than you look at the code 
 interprets the AST.
 
 # Team Members
-Chaitanya Bhatt
-Darshit Joshi
-Gaurav Kapri
+1. Chaitanya Bhatt
+2. Darshit Joshi
+3. Gaurav Kapri
