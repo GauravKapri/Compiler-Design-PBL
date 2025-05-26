@@ -118,7 +118,7 @@ def optimize_code(code_string):
     optimization_log = []
     constant_propagation_map = {}
     copy_propagation_map = {}
-    # Track how many times variables are assigned to detect mutability
+    # Times variables are assigned to detect mutability
     assign_counts = {}
     # First pass: count assignments per variable
     for instr in instructions:
@@ -271,14 +271,11 @@ def main():
     with open(input_path, "r") as f:
         input_code = f.read()
 
-    # Optimize code
     optimized_code, log = optimize_code(input_code)
 
-    # Write optimized code to file
     with open(output_code_path, "w") as f:
         f.write(optimized_code)
 
-    # Write optimization log to file
     with open(output_log_path, "w") as f:
         for entry in log:
             f.write(entry + "\n")
