@@ -3,6 +3,11 @@ import os
 
 
 class ProgramConverter:
+    """
+    A class to convert a LISP-like S-expression string into 3-address code.
+    It handles assignments, arithmetic operations, for loops, and if-else statements.
+    """
+
     def __init__(self):
         self.temp_count = 0
         self.label_count = 0
@@ -29,6 +34,7 @@ class ProgramConverter:
             ">=",
             "==",
             "!=",
+            "IF_FALSE",
         ]:
             instruction = [op, arg1, arg2, result]
         elif op in ["GOTO", "LABEL"]:
@@ -45,8 +51,7 @@ class ProgramConverter:
 
     def tokenize(self, s_expr_str):
         s_expr_str = s_expr_str.replace("(", " ( ").replace(")", " ) ")
-        tokens = s_expr_str.split()
-        return tokens
+        return s_expr_str.split()
 
     def parse_s_expression(self, token_list):
         sexpr = []
@@ -65,38 +70,34 @@ class ProgramConverter:
             return expr
         if not expr:
             return None
+
         op = expr[0]
         if op == "=":
             target = expr[1]
             value_expr = expr[2]
-            if isinstance(value_expr, list):
-                temp_result = self.convert_expression(value_expr)
-                self.emit("ASSIGN", temp_result, None, target)
-                return target
-            else:
-                self.emit("ASSIGN", value_expr, None, target)
-                return target
+            value = (
+                self.convert_expression(value_expr)
+                if isinstance(value_expr, list)
+                else value_expr
+            )
+            self.emit("ASSIGN", value, None, target)
+            return target
+
         elif op in ["+", "-", "*", "/", ">", "<", "<=", ">=", "==", "!="]:
-            arg1_val = self.convert_expression(expr[1])
-            arg2_val = self.convert_expression(expr[2])
+            arg1 = self.convert_expression(expr[1])
+            arg2 = self.convert_expression(expr[2])
             temp = self.new_temp()
-            if op == "+":
-                self.emit("ADD", arg1_val, arg2_val, temp)
-            elif op == "-":
-                self.emit("SUB", arg1_val, arg2_val, temp)
-            elif op == "*":
-                self.emit("MUL", arg1_val, arg2_val, temp)
-            elif op == "/":
-                self.emit("DIV", arg1_val, arg2_val, temp)
-            else:
-                self.emit(op, arg1_val, arg2_val, temp)
+            op_map = {"+": "ADD", "-": "SUB", "*": "MUL", "/": "DIV"}
+            self.emit(op_map.get(op, op), arg1, arg2, temp)
             return temp
+
         elif op == "++":
             var = expr[-1]
             temp = self.new_temp()
             self.emit("ADD", var, "1", temp)
             self.emit("ASSIGN", temp, None, var)
             return var
+
         elif op == "if":
             condition_expr = expr[1]
             true_branch_val = self.convert_expression(expr[2])
@@ -115,36 +116,41 @@ class ProgramConverter:
                 self.emit("ASSIGN", false_branch_val, None, result_temp)
             self.emit("LABEL", label_end)
             return result_temp
+
         else:
             return expr
 
     def convert_statement(self, stmt):
-        if not isinstance(stmt, list):
+        if not isinstance(stmt, list) or not stmt:
             return
-        if not stmt:
-            return
+
         op = stmt[0]
-        if op == "stmt":
+        if op in ["stmt", "main"]:
             for sub_stmt in stmt[1:]:
                 self.convert_statement(sub_stmt)
-        elif op == "main":
-            for sub_stmt in stmt[1:]:
-                self.convert_statement(sub_stmt)
+
         elif op == "for":
             self.convert_statement(stmt[1])
             self.convert_expression(stmt[2])
+
             label_loop_start = self.new_label()
             label_loop_end = self.new_label()
+
             self.emit("LABEL", label_loop_start)
-            actual_condition_expr = stmt[3][1]
-            cond_result = self.convert_expression(actual_condition_expr)
+
+            condition_expr = stmt[3][1]
+            cond_result = self.convert_expression(condition_expr)
             self.emit("IF_FALSE", cond_result, None, label_loop_end)
+
             self.convert_statement(stmt[4])
             self.convert_expression(stmt[3])
+
             self.emit("GOTO", label_loop_start)
             self.emit("LABEL", label_loop_end)
+
         elif op == "Dc":
-            pass
+            pass  # No TAC for declarations
+
         else:
             self.convert_expression(stmt)
 
@@ -165,7 +171,8 @@ class ProgramConverter:
 if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
     ast_output_path = os.path.join(script_dir, "..", "2. AST", "ast_output.txt")
-    s_expression_input = ""
+    icg_output_path = os.path.join(script_dir, "icg_output.txt")
+
     try:
         with open(ast_output_path, "r") as f:
             s_expression_input = f.read().strip()
@@ -174,12 +181,6 @@ if __name__ == "__main__":
             exit()
     except FileNotFoundError:
         print(f"Error: The file '{ast_output_path}' was not found.")
-        print("Please ensure your directory structure is:")
-        print("main-compiler/")
-        print("  ├── 2. AST/")
-        print("  │   └── ast_output.txt")
-        print("  └── 3. ICG/")
-        print("      └── ast_to_tac.py (this program)")
         exit()
     except Exception as e:
         print(f"An error occurred while reading the file: {e}")
@@ -188,26 +189,35 @@ if __name__ == "__main__":
     converter = ProgramConverter()
     three_address_code = converter.convert(s_expression_input)
 
-    for instruction in three_address_code:
-        op = instruction[0]
-        if op == "ASSIGN":
-            print(f"{instruction[3]} = {instruction[1]}")
-        elif op in ["ADD", "SUB", "MUL", "DIV", ">", "<", "<=", ">=", "==", "!="]:
-            print_op = op
-            if op == "ADD":
-                print_op = "+"
-            elif op == "SUB":
-                print_op = "-"
-            elif op == "MUL":
-                print_op = "*"
-            elif op == "DIV":
-                print_op = "/"
-            print(f"{instruction[3]} = {instruction[1]} {print_op} {instruction[2]}")
-        elif op == "IF_FALSE":
-            print(f"ifFalse {instruction[1]} goto {instruction[3]}")
-        elif op == "GOTO":
-            print(f"goto {instruction[1]}")
-        elif op == "LABEL":
-            print(f"{instruction[1]}:")
-        else:
-            print(f"UNHANDLED_INSTRUCTION: {instruction}")
+    try:
+        with open(icg_output_path, "w") as outfile:
+            for instruction in three_address_code:
+                op = instruction[0]
+                if op == "ASSIGN":
+                    line = f"{instruction[3]} = {instruction[1]}"
+                elif op in [
+                    "ADD",
+                    "SUB",
+                    "MUL",
+                    "DIV",
+                    ">",
+                    "<",
+                    "<=",
+                    ">=",
+                    "==",
+                    "!=",
+                ]:
+                    symbols = {"ADD": "+", "SUB": "-", "MUL": "*", "DIV": "/"}
+                    line = f"{instruction[3]} = {instruction[1]} {symbols.get(op, op)} {instruction[2]}"
+                elif op == "IF_FALSE":
+                    line = f"ifFalse {instruction[1]} goto {instruction[3]}"
+                elif op == "GOTO":
+                    line = f"goto {instruction[1]}"
+                elif op == "LABEL":
+                    line = f"{instruction[1]}:"
+                else:
+                    line = f"UNHANDLED_INSTRUCTION: {instruction}"
+                outfile.write(line + "\n")
+        print(f"Successfully generated 3-address code and saved to '{icg_output_path}'")
+    except Exception as e:
+        print(f"An error occurred while writing to '{icg_output_path}': {e}")
